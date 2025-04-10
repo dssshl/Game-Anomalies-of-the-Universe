@@ -25,13 +25,13 @@ namespace Game_Anomalies_of_the_Universe
 
         // Позиция и движение персонажа
         private Vector2 playerPosition;
-        private Vector2 playerVelocity;
+        private Vector2 playerMove;
 
         // Параметры движения
         private float playerSpeed = 500f;
         private float jumpForce = -500f;
         private float gravity = 1000f;
-        private bool isGrounded = false;
+        private bool isGround = false;
 
         //направление движения для спрайта
         private bool direction = true;
@@ -83,34 +83,30 @@ namespace Game_Anomalies_of_the_Universe
                 direction = true;
             }
 
-            playerVelocity.X = move * playerSpeed;
+            playerMove.X = move * playerSpeed;
 
-            if (keyboardState.IsKeyDown(Keys.Space) && isGrounded)
+            if (keyboardState.IsKeyDown(Keys.Space) && isGround)
             {
-                playerVelocity.Y = jumpForce;
-                isGrounded = false;
+                playerMove.Y = jumpForce;
+                isGround = false;
             }
 
-            playerVelocity.Y += gravity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            playerMove.Y += gravity * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            playerPosition += playerVelocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            playerPosition += playerMove * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             float ground = graphics.PreferredBackBufferHeight - 180;
             if (playerPosition.Y >= ground - playerTexture.Height)
             {
                 playerPosition.Y = ground - playerTexture.Height;
-                playerVelocity.Y = 0;
-                isGrounded = true;
-            }
-            else
-            {
-                isGrounded = false;
+                playerMove.Y = 0;
+                isGround = true;
             }
 
             playerPosition.X = MathHelper.Clamp(playerPosition.X, 0,
                 graphics.PreferredBackBufferWidth - playerTexture.Width);
 
-            if (Math.Abs(playerVelocity.X) > 0.1f)
+            if (Math.Abs(playerMove.X) > 0.1f)
             {
                 playerTexture = direction ? runRightTexture : runLeftTexture;
             }
