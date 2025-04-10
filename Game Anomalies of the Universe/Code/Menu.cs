@@ -17,7 +17,7 @@ namespace Game_Anomalies_of_the_Universe.Code
         static public void Update()
         {
             color = Color.FromNonPremultiplied(255, 255, 255, timeCount % 255);
-            timeCount ++;
+            timeCount++;
         }
     }
 }
