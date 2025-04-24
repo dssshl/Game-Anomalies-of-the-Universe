@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace Game_Anomalies_of_the_Universe.Code
 {
@@ -38,10 +39,16 @@ namespace Game_Anomalies_of_the_Universe.Code
         private Texture2D heartEmpty;
         private Vector2 heartPosition = new Vector2(50, 50);
 
-        public Rectangle Hitbox { get { return new Rectangle( (int)playerPosition.X + 10, (int)playerPosition.Y + 5,
-            playerTexture.Width - 20, playerTexture.Height - 10); } }
+        public Rectangle Hitbox
+                {  get  { return new Rectangle((int)playerPosition.X + 10, (int)playerPosition.Y + 5, playerTexture.Width - 20, playerTexture.Height - 10); } }
 
-       
+        //стрельба
+        private List<Bullet> bullets = new List<Bullet>();
+        private Texture2D bulletTexture;
+        private float shoot = 0f;
+        private const float shootCount = 0.5f;
+        public List<Bullet> Bullets => bullets;
+
         public Player(int screenWidth, int screenHeight, int groundLevel)
         {
             this.screenWidth = screenWidth;
@@ -56,6 +63,7 @@ namespace Game_Anomalies_of_the_Universe.Code
             runLeftTexture = content.Load<Texture2D>("runLeft");
             heartFull = content.Load<Texture2D>("heartFull");
             heartEmpty = content.Load<Texture2D>("heartEmpty");
+            bulletTexture = content.Load<Texture2D>("bullet");
         }
 
         public void UpdatePlayer(GameTime gameTime, KeyboardState keyboardState)
@@ -80,7 +88,7 @@ namespace Game_Anomalies_of_the_Universe.Code
                 isGrounded = false;
             }
 
-            playerMove = new Vector2( playerMove.X, playerMove.Y + gravity * (float)gameTime.ElapsedGameTime.TotalSeconds);
+            playerMove = new Vector2(playerMove.X, playerMove.Y + gravity * (float)gameTime.ElapsedGameTime.TotalSeconds);
 
             playerPosition += playerMove * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
@@ -91,29 +99,56 @@ namespace Game_Anomalies_of_the_Universe.Code
                 isGrounded = true;
             }
 
-            playerPosition = new Vector2( MathHelper.Clamp(playerPosition.X, 0, screenWidth - playerTexture.Width), playerPosition.Y);
+            playerPosition = new Vector2(MathHelper.Clamp(playerPosition.X, 0, screenWidth - playerTexture.Width), playerPosition.Y);
 
             if (Math.Abs(playerMove.X) > 0.1f)
                 playerTexture = direction ? runRightTexture : runLeftTexture;
+
+
+
+            if (shoot > 0)
+                shoot -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed && shoot <= 0)
+            {
+                Vector2 bulletPosition = new Vector2(playerPosition.X + playerTexture.Width / 2 - bulletTexture.Width / 2, playerPosition.Y + playerTexture.Height / 2 - bulletTexture.Height / 2);
+                Vector2 directionBullet = direction ? Vector2.UnitX : -Vector2.UnitX;
+
+                bullets.Add(new Bullet(bulletTexture, bulletPosition, directionBullet));
+
+                shoot = shootCount;
+            }
+
+            for (int i = bullets.Count - 1; i >= 0; i--)
+            {
+                bullets[i].Update(gameTime);
+
+                if (!bullets[i].InScreen)
+                    bullets.RemoveAt(i);
+            }
         }
 
         public void DrawTexture(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(playerTexture, playerPosition, Color.White);
             DrawHealth(spriteBatch);
+
+            foreach (var bullet in bullets)
+            {
+                bullet.Draw(spriteBatch);
+            }
         }
 
         public void DrawHealth(SpriteBatch spriteBatch)
         {
             const int space = 50;
 
-            for(int i = 0; i< MaxHealth; i++)
+            for (int i = 0; i < MaxHealth; i++)
             {
                 Texture2D heartTexture = (i < Health) ? heartFull : heartEmpty;
                 var position = heartPosition + new Vector2(i * space, 0);
                 spriteBatch.Draw(heartTexture, position, Color.White);
             }
-            
+
         }
 
         public void TakeDamage(int damage)
