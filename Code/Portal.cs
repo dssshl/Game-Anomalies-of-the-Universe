@@ -6,22 +6,20 @@ namespace Game_Anomalies_of_the_Universe.Code
 {
     public class Portal
     {
-        public Texture2D PortalTexture { get; set; }
-        public Vector2 PortalPosition { get; set; }
-        public bool Active { get; set; }
-
-        public Rectangle Hitbox
-                    { get { return new Rectangle((int)PortalPosition.X, (int)PortalPosition.Y, PortalTexture.Width, PortalTexture.Height); } }
+        public Texture2D portalTexture;
+        public Vector2 portalPosition;
+        public bool Active;
+        public Rectangle Hitbox => new Rectangle((int)portalPosition.X, (int)portalPosition.Y, portalTexture.Width, portalTexture.Height);
 
         public Portal(Vector2 position)
         {
-            PortalPosition = position;
+            portalPosition = position;
             Active = false;
         }
 
         public void LoadTexture(ContentManager content)
         {
-            PortalTexture = content.Load<Texture2D>("portal");
+            portalTexture = content.Load<Texture2D>("portal");
         }
 
         public void Update(GameTime gameTime)
@@ -29,11 +27,11 @@ namespace Game_Anomalies_of_the_Universe.Code
             if (!Active) return;
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        public void DrawTexture(SpriteBatch spriteBatch)
         {
             if (!Active) return;
 
-            spriteBatch.Draw(PortalTexture, PortalPosition, Color.White);
+            spriteBatch.Draw(portalTexture, portalPosition, Color.White);
         }
     }
 }

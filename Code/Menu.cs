@@ -5,15 +5,15 @@ namespace Game_Anomalies_of_the_Universe.Code
 {
     static class Menu
     {
-        static public Texture2D GameMenu { get; set; }
+        static public Texture2D gameMenu;
         static int timeCount = 0;
         static Color color;
         static private bool animationDone = false;
 
-        static public void Draw(SpriteBatch spriteBatch)
+        static public void DrawTexture(SpriteBatch spriteBatch)
         {
             Color newColor = animationDone ? Color.White : Color.FromNonPremultiplied(255, 255, 255, timeCount % 256);
-            spriteBatch.Draw(GameMenu, new Rectangle(0, 0, 1280, 768), newColor);
+            spriteBatch.Draw(gameMenu, new Rectangle(0, 0, 1650, 990), newColor);
         }
 
         static public void Update()
