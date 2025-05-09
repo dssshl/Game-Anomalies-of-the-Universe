@@ -14,7 +14,7 @@ namespace Game_Anomalies_of_the_Universe.Code
         public float frequency;
         private float count;
 
-        public Rectangle Hitbox => new Rectangle( (int)monsterPosition.X + 5, (int)monsterPosition.Y + 5, monsterTexture.Width - 15, monsterTexture.Height - 10);
+        public Rectangle Hitbox => new Rectangle((int)monsterPosition.X + 5, (int)monsterPosition.Y + 5, monsterTexture.Width - 15, monsterTexture.Height - 10);
 
         public Monster(Vector2 startPos, bool fly)
         {

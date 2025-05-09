@@ -10,7 +10,7 @@ namespace Game_Anomalies_of_the_Universe.Code
         private int left;
         private int right;
         private SpriteEffects turn = SpriteEffects.None;
-        public int health = 10;
+        public int health = 20;
         public bool Alive => health > 0;
 
         public Boss(Vector2 startPos, int left, int right) : base(startPos, false)

@@ -1,9 +1,12 @@
 ﻿using Game_Anomalies_of_the_Universe.Code;
+using Game_Anomalies_of_the_Universe.Code.Controllers;
+using Game_Anomalies_of_the_Universe.Code.Views;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using Vector2 = System.Numerics.Vector2;
 
 namespace Game_Anomalies_of_the_Universe
 {
@@ -19,7 +22,10 @@ namespace Game_Anomalies_of_the_Universe
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        private Player player;
+        private PlayerModel playerModel;
+        private PlayerView playerView;
+        private PlayerController playerController;
+
         private Texture2D gameOver;
         private Texture2D winGame;
 
@@ -34,15 +40,15 @@ namespace Game_Anomalies_of_the_Universe
         private const float monsterSpawn = 1.8f;
         private float monsterSpawnTimer = 0f;
 
+        private Boss boss;
+
         private Portal portal;
         private int monstersKilled = 0;
-        private int win = 1;
+        private int win = 10;
 
         private Texture2D[] backgrounds;
         private int currentLevel = 1;
         private const int maxLevels = 3;
-
-        private Boss boss;
 
         State _state = State.Menu;
 
@@ -60,8 +66,10 @@ namespace Game_Anomalies_of_the_Universe
             graphics.IsFullScreen = false;
             graphics.ApplyChanges();
 
-            int ground = graphics.PreferredBackBufferHeight - 230;
-            player = new Player(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, ground) { playerPosition = new Vector2(100, 370) };
+            int ground = graphics.PreferredBackBufferHeight - 370;
+            playerModel = new PlayerModel(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight, ground);
+            playerController = new PlayerController(playerModel);
+
             monsters = new List<Monster>();
             portal = new Portal(new Vector2(graphics.PreferredBackBufferWidth - 130, graphics.PreferredBackBufferHeight / 2 - 20));
             boss = new Boss(new Vector2(graphics.PreferredBackBufferWidth / 2, graphics.PreferredBackBufferHeight - 430), 0, graphics.PreferredBackBufferWidth);
@@ -75,14 +83,13 @@ namespace Game_Anomalies_of_the_Universe
             Menu.gameMenu = Content.Load<Texture2D>("MenuGame");
 
             backgrounds = new Texture2D[maxLevels];
-            backgrounds[0] = Content.Load<Texture2D>("Level1");
-            backgrounds[1] = Content.Load<Texture2D>("Level2");
-            backgrounds[2] = Content.Load<Texture2D>("Level3");
+            for (int i = 0; i < maxLevels; i++)
+                backgrounds[i] = Content.Load<Texture2D>($"Level{i + 1}");
 
             gameOver = Content.Load<Texture2D>("end");
             winGame = Content.Load<Texture2D>("Win");
-            player.LoadTexture(Content);
 
+            playerView = new PlayerView(Content);
             monsterTexture1Level1 = Content.Load<Texture2D>("monster1Level1");
             monsterTexture2Level1 = Content.Load<Texture2D>("monster2Level1");
             flyingMonsterTextureLevel1 = Content.Load<Texture2D>("FlyMonster1");
@@ -98,6 +105,8 @@ namespace Game_Anomalies_of_the_Universe
         protected override void Update(GameTime gameTime)
         {
             var keyboardState = Keyboard.GetState();
+            var time = (float)gameTime.ElapsedGameTime.TotalSeconds;
+            var mouseState = Mouse.GetState();
 
             switch (_state)
             {
@@ -111,7 +120,7 @@ namespace Game_Anomalies_of_the_Universe
                     break;
 
                 case State.Game:
-                    player.Update(gameTime, keyboardState);
+                    playerController.Update(time, keyboardState, mouseState);
                     CheckBullet();
 
                     if (currentLevel == 3)
@@ -120,15 +129,15 @@ namespace Game_Anomalies_of_the_Universe
                         {
                             boss.Update(gameTime);
 
-                            if (boss.Hitbox.Intersects(player.Hitbox))
-                                player.TakeDamage(1);
+                            if (boss.Hitbox.Intersects(playerModel.Hitbox))
+                                playerModel.TakeDamage(1);
 
-                            foreach (var bullet in player.Bullets.ToArray())
+                            foreach (var bullet in playerModel.Bullets.ToArray())
                             {
                                 if (bullet.Hitbox.Intersects(boss.Hitbox))
                                 {
                                     boss.TakeDamage(1);
-                                    bullet.onScreen = false;
+                                    bullet.OnScreen = false;
                                 }
                             }
                         }
@@ -138,7 +147,7 @@ namespace Game_Anomalies_of_the_Universe
                     else if (!portal.Active)
                         SpawnMonsters(gameTime);
 
-                    if (portal.Active && player.Hitbox.Intersects(portal.Hitbox))
+                    if (portal.Active && playerModel.Hitbox.Intersects(portal.Hitbox))
                         NextLevel();
                     break;
 
@@ -177,10 +186,10 @@ namespace Game_Anomalies_of_the_Universe
                             monster.DrawTexture(spriteBatch);
                     }
 
-                    player.DrawTexture(spriteBatch);
+                    playerView.Draw(spriteBatch, playerModel);
                     portal.DrawTexture(spriteBatch);
 
-                    if (!player.Alive)
+                    if (!playerModel.Alive)
                         _state = State.End;
                     break;
 
@@ -204,9 +213,9 @@ namespace Game_Anomalies_of_the_Universe
             {
                 monsters[i].Update(gameTime);
 
-                if (monsters[i].Hitbox.Intersects(player.Hitbox))
+                if (monsters[i].Hitbox.Intersects(playerModel.Hitbox))
                 {
-                    player.TakeDamage(1);
+                    playerModel.TakeDamage(1);
                     monsters.RemoveAt(i);
                     continue;
                 }
@@ -218,22 +227,35 @@ namespace Game_Anomalies_of_the_Universe
 
         private void CheckBullet()
         {
-            foreach (var bullet in player.Bullets.ToArray())
+            foreach (var bullet in playerModel.Bullets.ToArray())
             {
                 foreach (var monster in monsters.ToArray())
                 {
                     if (bullet.Hitbox.Intersects(monster.Hitbox))
                     {
-                        bullet.onScreen = false;
+                        bullet.OnScreen = false;
                         monsters.Remove(monster);
                         monstersKilled++;
-
-                        if (monstersKilled >= win && !portal.Active)
-                            portal.Active = true;
                         break;
                     }
                 }
+
+                if (currentLevel == 3 && boss.Alive && bullet.Hitbox.Intersects(boss.Hitbox))
+                {
+                    bullet.OnScreen = false;
+                    boss.TakeDamage(1);
+
+                    if (!boss.Alive)
+                        portal.Active = true;
+                }
+
+                if (bullet.Position.X > graphics.PreferredBackBufferWidth)
+                    bullet.OnScreen = false;
             }
+            playerModel.Bullets.RemoveAll(b => !b.OnScreen);
+
+            if (monstersKilled >= win && !portal.Active)
+                portal.Active = true;
         }
 
         private void NextLevel()
@@ -245,7 +267,7 @@ namespace Game_Anomalies_of_the_Universe
                 portal.Active = false;
                 win += 5;
                 monsters.Clear();
-                player.RestoreHealth();
+                playerModel.RestoreHealth();
             }
             else
                 _state = State.Win;
@@ -253,7 +275,6 @@ namespace Game_Anomalies_of_the_Universe
 
         private void SpawnMonsters(GameTime gameTime)
         {
-
             if (monstersKilled < win)
             {
                 monsterSpawnTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -274,8 +295,7 @@ namespace Game_Anomalies_of_the_Universe
                             monsters.Add(new Monster(new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 240 - monsterTexture2Level1.Height), false)
                             { monsterTexture = monsterTexture2Level1, monsterSpeed = 270f });
                         }
-                        monsters.Add(new Monster(
-                                new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 240 - monsterTexture1Level1.Height), false)
+                        monsters.Add(new Monster(new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 240 - monsterTexture1Level1.Height), false)
                         { monsterTexture = monsterTexture1Level1, monsterSpeed = 320f });
                     }
 
@@ -291,8 +311,7 @@ namespace Game_Anomalies_of_the_Universe
                             monsters.Add(new Monster(new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 230 - monsterTexture2Level2.Height), false)
                             { monsterTexture = monsterTexture2Level2, monsterSpeed = 290f });
                         }
-                        monsters.Add(new Monster(
-                                new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 230 - monsterTexture1Level2.Height), false)
+                        monsters.Add(new Monster(new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight - 230 - monsterTexture1Level2.Height), false)
                         { monsterTexture = monsterTexture1Level2, monsterSpeed = 340f });
                     }
                     else if (currentLevel == 3)
