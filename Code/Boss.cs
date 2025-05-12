@@ -28,7 +28,6 @@ namespace Game_Anomalies_of_the_Universe.Code
         public override void Update(GameTime gameTime)
         {
             float moveX = moveRight ? monsterSpeed : -monsterSpeed;
-
             monsterPosition.X += moveX * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             if (monsterPosition.X <= left)

@@ -43,7 +43,7 @@ namespace Game_Anomalies_of_the_Universe.Code.Controllers
                 player.Invulnerability -= time;
         }
 
-        private void Jumping(float deltaTime, KeyboardState keyboardState)
+        private void Jumping(float time, KeyboardState keyboardState)
         {
             if (keyboardState.IsKeyDown(Keys.Space) && player.IsGround)
             {
@@ -51,8 +51,8 @@ namespace Game_Anomalies_of_the_Universe.Code.Controllers
                 player.IsGround = false;
             }
 
-            player.Move = new Vector2(player.Move.X, player.Move.Y + gravity * deltaTime);
-            player.Position += new Vector2(0, player.Move.Y * deltaTime);
+            player.Move = new Vector2(player.Move.X, player.Move.Y + gravity * time);
+            player.Position += new Vector2(0, player.Move.Y * time);
 
             if (player.Position.Y >= player.Ground - player.Hitbox.Height)
             {

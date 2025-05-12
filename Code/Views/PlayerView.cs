@@ -37,7 +37,6 @@ namespace Game_Anomalies_of_the_Universe.Code.Views
 
             Color color = player.Invulnerability > 0 ? Color.Red : Color.White;
             spriteBatch.Draw(currentTexture, player.Position, color);
-
             DrawHealth(spriteBatch, player);
 
             foreach (var bullet in player.Bullets)
