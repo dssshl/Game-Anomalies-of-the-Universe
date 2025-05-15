@@ -79,7 +79,7 @@ namespace Game_Anomalies_of_the_Universe
             gameOver = Content.Load<Texture2D>("end");
             winGame = Content.Load<Texture2D>("Win");
             playerView = new PlayerView(Content);
-            Monster.LoadContent(Content);
+            MonsterView.LoadContent(Content);
             boss.LoadTexture(Content);
             boss.monsterSpeed = 200f;
 
@@ -137,11 +137,11 @@ namespace Game_Anomalies_of_the_Universe
                     spriteBatch.Draw(backgrounds[currentLevel - 1], new Rectangle(0, 0, 1650, 990), Color.White);
 
                     if (currentLevel == 3 && boss.Alive)
-                        boss.DrawTexture(spriteBatch);
+                        boss.Draw(spriteBatch);
                     else
                     {
                         foreach (var monster in monsters)
-                            monster.DrawTexture(spriteBatch);
+                            monster.Draw(spriteBatch);
                     }
 
                     playerView.Draw(spriteBatch, playerModel);
@@ -182,14 +182,11 @@ namespace Game_Anomalies_of_the_Universe
                 {
                     bullet.OnScreen = false;
                     boss.TakeDamage(1);
-
-                    if (!boss.Alive)
-                        portal.Active = true;
                 }
             }
             playerModel.Bullets.RemoveAll(b => !b.OnScreen);
 
-            if (monstersKilled >= win && !portal.Active)
+            if (monstersKilled >= win && !portal.Active || !boss.Alive)
                 portal.Active = true;
         }
 

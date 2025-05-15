@@ -33,7 +33,7 @@ namespace Game_Anomalies_of_the_Universe
         public readonly int screenHeight;
         public int Ground { get; }
 
-        public Rectangle Hitbox => new Rectangle((int)Position.X + 10, (int)Position.Y + 5, 100, 70);
+        public Rectangle Hitbox => new Rectangle((int)Position.X, (int)Position.Y, 100, 70);
 
         public PlayerModel(int screenWidth, int screenHeight, int ground)
         {

@@ -69,7 +69,7 @@ namespace Game_Anomalies_of_the_Universe.Code.Controllers
 
             if (mouseState.LeftButton == ButtonState.Pressed && player.Shoot <= 0)
             {
-                Vector2 bulletPosition = new Vector2( player.Position.X + player.Hitbox.Width / 2 - 10f, player.Position.Y + player.Hitbox.Height / 2 + 90f);
+                Vector2 bulletPosition = new Vector2( player.Position.X + player.Hitbox.Width / 2 - 10, player.Position.Y + player.Hitbox.Height / 2 + 90);
                 Vector2 direction = player.DirectionRight ? Vector2.UnitX : -Vector2.UnitX;
 
                 player.Bullets.Add(new BulletModel(bulletPosition, direction));
@@ -81,7 +81,7 @@ namespace Game_Anomalies_of_the_Universe.Code.Controllers
         {
             for (int i = player.Bullets.Count - 1; i >= 0; i--)
             {
-                player.Bullets[i].Position += player.Bullets[i].Direction * player.Bullets[i].Speed * time;
+                player.Bullets[i].Position += player.Bullets[i].Move * player.Bullets[i].Speed * time;
 
                 if (player.Bullets[i].Position.X < 0 || player.Bullets[i].Position.X > player.screenWidth ||
                     player.Bullets[i].Position.Y < 0 || player.Bullets[i].Position.Y > player.screenHeight)

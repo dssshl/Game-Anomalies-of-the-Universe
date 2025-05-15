@@ -45,7 +45,7 @@ namespace Game_Anomalies_of_the_Universe.Code
             if (!Alive) return;
         }
 
-        public override void DrawTexture(SpriteBatch spriteBatch)
+        public override void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(monsterTexture, monsterPosition, null, Color.White, 0f, Vector2.Zero, 1f, turn, 0f);
             if (!Alive) return;
