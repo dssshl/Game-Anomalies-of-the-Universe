@@ -4,6 +4,7 @@ using Game_Anomalies_of_the_Universe.Code.Views;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System;
 using System.Collections.Generic;
 
@@ -36,8 +37,8 @@ namespace Game_Anomalies_of_the_Universe
         private Boss boss;
         private Portal portal;
         private int monstersKilled = 0;
-        private int win = 10;
-
+        private int win = 15;
+        private Song backgroundMusic;
         private Texture2D[] backgrounds;
         private int currentLevel = 1;
         private const int maxLevels = 3;
@@ -72,6 +73,11 @@ namespace Game_Anomalies_of_the_Universe
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Menu.gameMenu = Content.Load<Texture2D>("MenuGame");
+
+            backgroundMusic = Content.Load<Song>("BackgroundMusic");
+            MediaPlayer.Play(backgroundMusic);
+            MediaPlayer.IsRepeating = true;
+            MediaPlayer.Volume = 0.5f;
 
             backgrounds = new Texture2D[maxLevels];
             for (int i = 0; i < maxLevels; i++)
